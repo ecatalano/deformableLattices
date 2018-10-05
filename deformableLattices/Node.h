@@ -18,16 +18,25 @@ class Spring;
 
 class Node{
 public:
+    Node(GLfloat x, GLfloat y, GLfloat z);
+    Node();
+    ~Node();
+    
     GLfloat getX();
     GLfloat getY();
     GLfloat getZ();
     GLfloat getTotalForce();
+    
     void addSpring(int springID, Spring *spring);
     void removeSpring(int springID);
     
+    void setIsSelected(bool value){ isSelected = value; }
+    bool getIsSelected(){ return isSelected; }
+    
 private:
+    bool isSelected = false;
+    GLfloat initialX, initialY, initialZ;
     GLfloat x, y, z;
-    GLfloat totalForce;
     std::map <int, Spring *> connectedSprings;
 };
 

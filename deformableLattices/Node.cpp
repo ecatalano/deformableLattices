@@ -9,6 +9,12 @@
 #include "Node.h"
 #include "Spring.h"
 
+Node::Node(GLfloat x, GLfloat y, GLfloat z){
+    this->x = x;
+    this->y = y;
+    this->z = z;
+}
+
 GLfloat Node::getX(){
     return this->x;
 }

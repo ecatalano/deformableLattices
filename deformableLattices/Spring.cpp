@@ -10,6 +10,17 @@
 #include "Node.h"
 #include <math.h>
 
+
+Spring::Spring(int springID, GLfloat naturalLength, GLfloat stiffness, Node *node1, Node *node2){
+    this->naturalLength = naturalLength;
+    this->stiffness = stiffness;
+    this->node1 = node1;
+    this->node2 = node2;
+    node1->addSpring(springID, this);
+    node2->addSpring(springID, this);
+
+}
+
 GLfloat Spring::getNaturalLength(){
     return  this->naturalLength;
 }
