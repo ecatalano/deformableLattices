@@ -58,5 +58,7 @@ GLfloat Spring::getDeformation(){
     return getActualLength() - naturalLength;
 }
 GLfloat Spring::getForce(){
-    return ((stiffness * getDeformation()) / getActualLength()) * getSeparation();
+    GLfloat force = ((stiffness * getDeformation()) / getActualLength()) * getSeparation();
+    if(force > 10) printf("force is > 10.\n");
+    return force;
 }

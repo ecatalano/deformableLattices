@@ -23,10 +23,13 @@
 int windowHeight = 500;
 int windowWidth = 500;
 
-char mode = 's';
+GLfloat sensitivity = 10.0;
+
+char mode = 'x';
 std::vector<Node *> nodes;
 std::vector<Spring *> springs;
 std::vector<std::array<int, 2>> nodeCoords;
+std::vector<Node *> selectedNodes;
 
 
 void drawNode(Node *node);
@@ -83,7 +86,7 @@ Node *closestNodeToScreenCoord(GLfloat x, GLfloat y) {
     float shortestDistance = sqrt(prod1 + prod2);
     
     //TODO: IMPLEMENT DIVIDE AND CONQUER STRATEGY
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < nodeCoords.size(); i++) {
         tempX = nodeCoords[i][0];
         tempY = nodeCoords[i][1];
             
@@ -109,13 +112,15 @@ void init(){
     Node *node3 = new Node (0.0 , -30.0, 30.0);
     Node *node4 = new Node (0.0 , 30.0, -30.0);
     
+    
     Spring *spring1 = new Spring(1, 1.0, 1.0, node1, node2);
     Spring *spring2 = new Spring(1, 1.0, 1.0, node1, node3);
     Spring *spring3 = new Spring(1, 1.0, 1.0, node1, node4);
     Spring *spring4 = new Spring(1, 1.0, 1.0, node3, node4);
     Spring *spring5 = new Spring(1, 1.0, 1.0, node2, node4);
     Spring *spring6 = new Spring(1, 1.0, 1.0, node2, node3);
-    
+
+
     nodes.push_back(node1);
     nodes.push_back(node2);
     nodes.push_back(node3);
@@ -127,6 +132,69 @@ void init(){
     springs.push_back(spring4);
     springs.push_back(spring5);
     springs.push_back(spring6);
+    
+    
+    /*Node *node5 = new Node(30.0, -30.0, -30.0);
+    Node *node6 = new Node (30.0 , 30.0, 30.0);
+    Node *node7 = new Node (30.0 , -30.0, 30.0);
+    Node *node8 = new Node (30.0 , 30.0, -30.0);
+
+    Spring *spring7 = new Spring(1, 1.0, 1.0, node5, node6);
+    Spring *spring8 = new Spring(1, 1.0, 1.0, node5, node7);
+    Spring *spring9 = new Spring(1, 1.0, 1.0, node5, node8);
+    Spring *spring10 = new Spring(1, 1.0, 1.0, node6, node7);
+    Spring *spring11 = new Spring(1, 1.0, 1.0, node7, node8);
+    Spring *spring12 = new Spring(1, 1.0, 1.0, node6, node8);
+    
+    Spring *spring13 = new Spring(1, 1.0, 1.0, node1, node5);
+    Spring *spring14 = new Spring(1, 1.0, 1.0, node2, node5);
+    Spring *spring15 = new Spring(1, 1.0, 1.0, node3, node5);
+    Spring *spring16 = new Spring(1, 1.0, 1.0, node4, node5);
+    
+    Spring *spring17 = new Spring(1, 1.0, 1.0, node1, node6);
+    Spring *spring18 = new Spring(1, 1.0, 1.0, node2, node6);
+    Spring *spring19 = new Spring(1, 1.0, 1.0, node3, node6);
+    Spring *spring20 = new Spring(1, 1.0, 1.0, node4, node6);
+    
+    Spring *spring21 = new Spring(1, 1.0, 1.0, node1, node7);
+    Spring *spring22 = new Spring(1, 1.0, 1.0, node2, node7);
+    Spring *spring23 = new Spring(1, 1.0, 1.0, node3, node7);
+    Spring *spring24 = new Spring(1, 1.0, 1.0, node4, node7);
+    
+    Spring *spring25 = new Spring(1, 1.0, 1.0, node1, node8);
+    Spring *spring26 = new Spring(1, 1.0, 1.0, node2, node8);
+    Spring *spring27 = new Spring(1, 1.0, 1.0, node3, node8);
+    Spring *spring28 = new Spring(1, 1.0, 1.0, node4, node8);
+    
+    nodes.push_back(node5);
+    nodes.push_back(node6);
+    nodes.push_back(node7);
+    nodes.push_back(node8);
+    
+    springs.push_back(spring7);
+    springs.push_back(spring8);
+    springs.push_back(spring9);
+    springs.push_back(spring10);
+    springs.push_back(spring11);
+    springs.push_back(spring12);
+    
+    springs.push_back(spring13);
+    springs.push_back(spring14);
+    springs.push_back(spring15);
+    springs.push_back(spring16);
+    springs.push_back(spring17);
+    springs.push_back(spring18);
+    springs.push_back(spring19);
+    springs.push_back(spring20);
+    
+    springs.push_back(spring21);
+    springs.push_back(spring22);
+    springs.push_back(spring23);
+    springs.push_back(spring24);
+    springs.push_back(spring25);
+    springs.push_back(spring26);
+    springs.push_back(spring27);
+    springs.push_back(spring28);*/
 
 }
 
@@ -210,7 +278,14 @@ void reshape(int w, int h) {
 void selectNode(int x, int y) {
     Node *tempNode = closestNodeToScreenCoord(x, y);
     
-    tempNode->setIsSelected(true);
+    if(!tempNode->getIsSelected()){
+        tempNode->setIsSelected(true);
+        selectedNodes.push_back(tempNode);
+    }
+    else{
+        tempNode->setIsSelected(false);
+        selectedNodes.erase(std::remove(selectedNodes.begin(), selectedNodes.end(), tempNode), selectedNodes.end());
+    }
     
     display();
 }
@@ -218,6 +293,8 @@ void selectNode(int x, int y) {
 void deselectNode(int x, int y){
     Node *tempNode = closestNodeToScreenCoord(x, y);
     tempNode->setIsSelected(false);
+    selectedNodes.erase(std::remove(selectedNodes.begin(), selectedNodes.end(), tempNode), selectedNodes.end());
+
     display();
 }
 
@@ -227,28 +304,64 @@ void onMouseClick(int button, int state, int x, int y)
     switch (button) {
         case GLUT_LEFT_BUTTON:
             if (state == GLUT_DOWN) {
-                if(mode == 's'){
+                /*if(mode == 's'){
                     selectNode(x, windowHeight - y);
                     break;
                 }
                 else if(mode == 'd'){
                     deselectNode(x, windowHeight - y);
                     break;
-                }
+                }*/
+                selectNode(x, windowHeight - y);
             }
     }
+}
+
+void changeNodeCoord(Node *node, GLfloat value){
+    switch(mode){
+        case 'x':
+            node->setX(node->getX()+value);
+            break;
+        case 'y':
+            node->setY(node->getY()+value);
+            break;
+        case 'z':
+            node->setZ(node->getZ()+value);
+            break;
+    }
+    
 }
 
 void keyboardFunction(unsigned char key, int x, int y) {
     std::string modeStr;
     switch (key) {
-        case 's':
-            mode = 's';
-            modeStr = "s";
+        case 'x':
+            mode = 'x';
+            modeStr = "x";
             break;
-        case 'd':
-            mode = 'd';
-            modeStr = "d";
+        case 'y':
+            mode = 'y';
+            modeStr = "y";
+            break;
+        case 'z':
+            mode = 'z';
+            modeStr = "z";
+            break;
+        case '=':
+            for(int i = 0; i < selectedNodes.size(); i++){
+                Node *tempNode = selectedNodes.at(i);
+                changeNodeCoord(tempNode, sensitivity);
+            }
+            display();
+
+            break;
+        case '-':
+            for(int i = 0; i < selectedNodes.size(); i++){
+                Node *tempNode = selectedNodes.at(i);
+                changeNodeCoord(tempNode, -sensitivity);
+            }
+            display();
+
             break;
     }
     if(modeStr!="") std::cout << "Current Mode: " << modeStr << std::endl;

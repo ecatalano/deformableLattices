@@ -27,6 +27,10 @@ public:
     GLfloat getZ();
     GLfloat getTotalForce();
     
+    void setX(GLfloat newX);
+    void setY(GLfloat newY);
+    void setZ(GLfloat newZ);
+    
     void addSpring(int springID, Spring *spring);
     void removeSpring(int springID);
     

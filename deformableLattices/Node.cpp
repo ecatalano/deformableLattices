@@ -24,6 +24,19 @@ GLfloat Node::getY(){
 GLfloat Node::getZ(){
     return this->z;
 }
+
+void Node::setX(GLfloat newX){
+    this->x = newX;
+}
+
+void Node::setY(GLfloat newY){
+    this->y = newY;
+}
+
+void Node::setZ(GLfloat newZ){
+    this->z = newZ;
+}
+
 GLfloat Node::getTotalForce(){
     //Total force = sum of force from each connected spring
     std::map<int, Spring *>::iterator i;
