@@ -11,18 +11,24 @@
 #include <math.h>
 
 
-Spring::Spring(int springID, GLfloat naturalLength, GLfloat stiffness, Node *node1, Node *node2){
-    this->naturalLength = naturalLength;
+Spring::Spring(int springID, GLfloat stiffness, Node *node1, Node *node2){
     this->stiffness = stiffness;
     this->node1 = node1;
     this->node2 = node2;
+    
+    this->naturalLength = abs(getSeparation());
+
+    this->springID = springID;
     node1->addSpring(springID, this);
     node2->addSpring(springID, this);
+}
 
+int Spring::getSpringID(){
+    return this->springID;
 }
 
 GLfloat Spring::getNaturalLength(){
-    return  this->naturalLength;
+    return this->naturalLength;
 }
 void Spring::setNaturalLength(GLfloat naturalLength){
     this->naturalLength = naturalLength;
@@ -59,6 +65,5 @@ GLfloat Spring::getDeformation(){
 }
 GLfloat Spring::getForce(){
     GLfloat force = ((stiffness * getDeformation()) / getActualLength()) * getSeparation();
-    if(force > 10) printf("force is > 10.\n");
     return force;
 }

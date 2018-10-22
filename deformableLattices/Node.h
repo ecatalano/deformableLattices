@@ -33,9 +33,12 @@ public:
     
     void addSpring(int springID, Spring *spring);
     void removeSpring(int springID);
-    
+
+    void printAllSpringInfo();
     void setIsSelected(bool value){ isSelected = value; }
     bool getIsSelected(){ return isSelected; }
+    
+    void resetPosition();
     
 private:
     bool isSelected = false;

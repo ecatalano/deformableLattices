@@ -18,7 +18,7 @@ class Node;
 
 class Spring{
 public:
-    Spring(int springID, GLfloat naturalLength, GLfloat stiffness, Node *node1, Node *node2);
+    Spring(int springID, GLfloat stiffness, Node *node1, Node *node2);
     Spring();
     ~Spring();
     
@@ -46,6 +46,7 @@ private:
     int springID;
     GLfloat naturalLength;
     GLfloat stiffness;
+    GLfloat elasticity;
     Node *node1;
     Node *node2;
 };

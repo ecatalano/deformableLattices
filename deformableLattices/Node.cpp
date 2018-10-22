@@ -13,6 +13,10 @@ Node::Node(GLfloat x, GLfloat y, GLfloat z){
     this->x = x;
     this->y = y;
     this->z = z;
+    
+    this->initialX = x;
+    this->initialY = y;
+    this->initialZ = z;
 }
 
 GLfloat Node::getX(){
@@ -37,6 +41,12 @@ void Node::setZ(GLfloat newZ){
     this->z = newZ;
 }
 
+void Node::resetPosition(){
+    this->x = initialX;
+    this->y = initialY;
+    this->z = initialZ;
+}
+
 GLfloat Node::getTotalForce(){
     //Total force = sum of force from each connected spring
     std::map<int, Spring *>::iterator i;
@@ -54,4 +64,30 @@ void Node::addSpring(int springID, Spring *spring){
 
 void Node::removeSpring(int springID){
     connectedSprings.erase(connectedSprings.find(springID));
+}
+
+void Node::printAllSpringInfo(){
+    std::map<int, Spring *>::iterator it;
+    for (it = connectedSprings.begin(); it != connectedSprings.end(); ++it){
+        Spring *tempSpring = it->second;
+        
+        
+        int springID = tempSpring->getSpringID();
+        GLfloat separation = tempSpring->getSeparation();
+        GLfloat actualLength = tempSpring->getActualLength();
+        GLfloat deformation = tempSpring->getDeformation();
+        GLfloat force = tempSpring->getForce();
+        GLfloat naturalLength = tempSpring->getNaturalLength();
+        
+        if(separation == naturalLength) continue;
+        
+        printf("-------Spring %d-------\n", springID);
+        printf("Length: %f\n", actualLength);
+        printf("Natural Length: %f\n", naturalLength);
+
+        printf("deformation: %f\n", deformation);
+        printf("force: %f\n", force);
+        printf("-----------------------\n");
+
+    }
 }

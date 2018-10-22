@@ -36,6 +36,12 @@ void drawNode(Node *node);
 void drawSpring(Spring *spring);
 void display();
 
+void printSelectedNodeSpringInfo(){
+    for(int i = 0; i < selectedNodes.size(); i++){
+        selectedNodes.at(i)->printAllSpringInfo();
+    }
+}
+
 void setScreenCoords(int i) {
     float tempX = nodes[i]->getX();
     float tempY = nodes[i]->getY();
@@ -113,13 +119,12 @@ void init(){
     Node *node4 = new Node (0.0 , 30.0, -30.0);
     
     
-    Spring *spring1 = new Spring(1, 1.0, 1.0, node1, node2);
-    Spring *spring2 = new Spring(1, 1.0, 1.0, node1, node3);
-    Spring *spring3 = new Spring(1, 1.0, 1.0, node1, node4);
-    Spring *spring4 = new Spring(1, 1.0, 1.0, node3, node4);
-    Spring *spring5 = new Spring(1, 1.0, 1.0, node2, node4);
-    Spring *spring6 = new Spring(1, 1.0, 1.0, node2, node3);
-
+    Spring *spring1 = new Spring(1, 1.0, node1, node2);
+    Spring *spring2 = new Spring(2, 1.0, node1, node3);
+    Spring *spring3 = new Spring(3, 1.0, node1, node4);
+    Spring *spring4 = new Spring(4, 1.0, node3, node4);
+    Spring *spring5 = new Spring(5, 1.0, node2, node4);
+    Spring *spring6 = new Spring(6, 1.0, node2, node3);
 
     nodes.push_back(node1);
     nodes.push_back(node2);
@@ -132,7 +137,6 @@ void init(){
     springs.push_back(spring4);
     springs.push_back(spring5);
     springs.push_back(spring6);
-    
     
     /*Node *node5 = new Node(30.0, -30.0, -30.0);
     Node *node6 = new Node (30.0 , 30.0, 30.0);
@@ -214,8 +218,7 @@ void display(void){
     }
 
     glutSwapBuffers();
-    
-
+    printSelectedNodeSpringInfo();
 }
 
 void drawNode(Node *node) {
@@ -362,6 +365,13 @@ void keyboardFunction(unsigned char key, int x, int y) {
             }
             display();
 
+            break;
+        case 'r':
+            for(int i = 0; i < nodes.size(); i++){
+                Node *tempNode = nodes.at(i);
+                tempNode->resetPosition();
+            }
+            display();
             break;
     }
     if(modeStr!="") std::cout << "Current Mode: " << modeStr << std::endl;
