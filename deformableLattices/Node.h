@@ -25,11 +25,18 @@ public:
     GLfloat getX();
     GLfloat getY();
     GLfloat getZ();
+    
+    GLfloat getDeltaX();
+    GLfloat getDeltaY();
+    GLfloat getDeltaZ();
+    
     GLfloat getTotalForce();
     
     void setX(GLfloat newX);
     void setY(GLfloat newY);
     void setZ(GLfloat newZ);
+    
+    void setPropagated(bool propagated){ this->propagated = propagated; }
     
     void addSpring(int springID, Spring *spring);
     void removeSpring(int springID);
@@ -38,11 +45,16 @@ public:
     void setIsSelected(bool value){ isSelected = value; }
     bool getIsSelected(){ return isSelected; }
     
+    bool didPropagate(){ return propagated; }
+    
+    void propagateMovementToNeighbors(GLfloat deltaX, GLfloat deltaY, GLfloat deltaZ);
+    
     void resetPosition();
     
 private:
     bool isSelected = false;
     GLfloat initialX, initialY, initialZ;
+    bool propagated = false;
     GLfloat x, y, z;
     std::map <int, Spring *> connectedSprings;
 };

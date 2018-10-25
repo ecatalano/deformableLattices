@@ -8,6 +8,7 @@
 
 #include "Node.h"
 #include "Spring.h"
+#include <cmath>
 
 Node::Node(GLfloat x, GLfloat y, GLfloat z){
     this->x = x;
@@ -39,6 +40,70 @@ void Node::setY(GLfloat newY){
 
 void Node::setZ(GLfloat newZ){
     this->z = newZ;
+}
+
+GLfloat Node::getDeltaX(){
+    return abs(this->initialX - this->x);
+}
+GLfloat Node::getDeltaY(){
+    return abs(this->initialY - this->y);
+}
+GLfloat Node::getDeltaZ(){
+    return abs(this->initialZ - this->z);
+}
+
+void Node::propagateMovementToNeighbors(GLfloat deltaX, GLfloat deltaY, GLfloat deltaZ){
+    std::map<int, Spring *>::iterator i;
+    
+    if(deltaX == 0 && deltaY == 0.0 && deltaZ == 0.0) return;
+    
+    this->propagated = true;
+    
+    GLfloat adjustment = .25;
+    
+    GLfloat newDeltaX = adjustment * deltaX;
+    GLfloat newDeltaY = adjustment * deltaY;
+    GLfloat newDeltaZ = adjustment * deltaZ;
+    
+    for(i = connectedSprings.begin(); i != connectedSprings.end(); i++){
+        
+        Spring *tempSpring = (Spring *)i->second;
+        Node *node1 = tempSpring->getNode1();
+        Node *node2 = tempSpring->getNode2();
+
+        if(node1 != this){
+            if(!node1->didPropagate()){
+                node1->setX(node1->getX()+newDeltaX);
+                node1->setY(node1->getY()+newDeltaY);
+                node1->setZ(node1->getZ()+newDeltaZ);
+            }
+        }
+        else{
+            if(!node2->didPropagate()){
+                node2->setX(node2->getX()+newDeltaX);
+                node2->setY(node2->getY()+newDeltaY);
+                node2->setZ(node2->getZ()+newDeltaZ);
+            }
+        }
+    }
+    
+    for(i = connectedSprings.begin(); i != connectedSprings.end(); i++){
+        
+        Spring *tempSpring = (Spring *)i->second;
+        Node *node1 = tempSpring->getNode1();
+        Node *node2 = tempSpring->getNode2();
+        
+        if(node1 != this){
+            if(!node1->didPropagate()){
+                node1->propagateMovementToNeighbors(newDeltaX, newDeltaY, newDeltaZ);
+            }
+        }
+        else{
+            if(!node2->didPropagate()){
+                node2->propagateMovementToNeighbors(newDeltaX, newDeltaY, newDeltaZ);
+            }
+        }
+    }
 }
 
 void Node::resetPosition(){

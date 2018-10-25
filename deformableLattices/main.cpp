@@ -16,6 +16,7 @@
 #include <string.h>
 #include <vector>
 #include <array>
+#include "glm.hpp"
 
 #include "Node.h"
 #include "Spring.h"
@@ -31,6 +32,9 @@ std::vector<Spring *> springs;
 std::vector<std::array<int, 2>> nodeCoords;
 std::vector<Node *> selectedNodes;
 
+std::vector < glm::vec3 > vertices;
+std::vector < glm::vec2 > uvs;
+std::vector < glm::vec3 > normals;
 
 void drawNode(Node *node);
 void drawSpring(Spring *spring);
@@ -41,6 +45,13 @@ void printSelectedNodeSpringInfo(){
         selectedNodes.at(i)->printAllSpringInfo();
     }
 }
+
+void clearAllPropagationFlags(){
+    for(int i = 0; i < nodes.size(); i++){
+        nodes.at(i)->setPropagated(false);
+    }
+}
+
 
 void setScreenCoords(int i) {
     float tempX = nodes[i]->getX();
@@ -111,9 +122,102 @@ Node *closestNodeToScreenCoord(GLfloat x, GLfloat y) {
 }
 
 
+bool loadOBJ(const char * path,
+                    std::vector < glm::vec3 > & out_vertices,
+                    std::vector < glm::vec2 > & out_uvs,
+                    std::vector < glm::vec3 > & out_normals) {
+    
+    //Based off of http://www.opengl-tutorial.org/beginners-tutorials/tutorial-7-model-loading/
+    
+    //temporary variables in which we will store the contents of the .obj :
+    std::vector< unsigned int > vertexIndices, uvIndices, normalIndices;
+    std::vector< glm::vec3 > temp_vertices;
+    std::vector< glm::vec2 > temp_uvs;
+    std::vector< glm::vec3 > temp_normals;
+    
+    //Read from file
+    
+    FILE *file;
+    file = fopen(path, "r");
+    //fopen_s(&file, path, "r");
+    if (file == NULL) {
+        printf("Could not open file: %s\n", path);
+        return false;
+    }
+    //Read until EOF
+    while (1) {
+        char lineHeader[128];
+        
+        //read first word of line
+        int res = fscanf(file, "%s", lineHeader);
+        if (res == EOF) break;        //deal with vertices
+        
+        
+        if (strcmp(lineHeader, "v") == 0) {
+            glm::vec3 vertex;
+            fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z);
+            temp_vertices.push_back(vertex);
+        }
+        else if (strcmp(lineHeader, "vt") == 0) {
+            glm::vec2 uv;
+            fscanf(file, "%f %f\n", &uv.x, &uv.y);
+            temp_uvs.push_back(uv);
+        }
+        else if (strcmp(lineHeader, "vn") == 0) {
+            glm::vec3 normal;
+            fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z);
+            temp_normals.push_back(normal);
+        }
+        else if (strcmp(lineHeader, "f") == 0) {
+            std::string vertex1, vertex2, vertex3;
+            unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
+            int matches = fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2]);
+            if (matches == 9) {
+                vertexIndices.push_back(vertexIndex[0]);
+                vertexIndices.push_back(vertexIndex[1]);
+                vertexIndices.push_back(vertexIndex[2]);
+                uvIndices.push_back(uvIndex[0]);
+                uvIndices.push_back(uvIndex[1]);
+                uvIndices.push_back(uvIndex[2]);
+                normalIndices.push_back(normalIndex[0]);
+                normalIndices.push_back(normalIndex[1]);
+                normalIndices.push_back(normalIndex[2]);
+            }
+        }
+    }
+    //Processing the data
+    for (int i = 0; i < vertexIndices.size(); i++) {
+        unsigned int vertexIndex = vertexIndices[i];
+        glm::vec3 vertex = temp_vertices[vertexIndex - 1];
+        out_vertices.push_back(vertex);
+    }
+    for (int i = 0; i < uvIndices.size(); i++) {
+        unsigned int uvIndex = uvIndices[i];
+        glm::vec2 uv = temp_uvs[uvIndex - 1];
+        out_uvs.push_back(uv);
+    }
+    for (int i = 0; i < normalIndices.size(); i++) {
+        unsigned int normalIndex = normalIndices[i];
+        glm::vec3 normal = temp_normals[normalIndex - 1];
+        out_normals.push_back(normal);
+    }
+    return true;
+}
+
+
 void init(){
 
-    Node *node1 = new Node(0.0, -30.0, -30.0);
+    const char *objString = "0019.obj";
+    
+    bool load = loadOBJ(objString, vertices, uvs, normals);
+    
+    for(int i = 0; i < vertices.size(); i++){
+        
+        Node *tempNode = new Node(vertices.at(i)[0], vertices.at(i)[1], vertices.at(i)[2]);
+        nodes.push_back(tempNode);
+    }
+
+    /*Node *node1 = new Node(0.0, -30.0, -30.0);
     Node *node2 = new Node (0.0 , 30.0, 30.0);
     Node *node3 = new Node (0.0 , -30.0, 30.0);
     Node *node4 = new Node (0.0 , 30.0, -30.0);
@@ -136,69 +240,7 @@ void init(){
     springs.push_back(spring3);
     springs.push_back(spring4);
     springs.push_back(spring5);
-    springs.push_back(spring6);
-    
-    /*Node *node5 = new Node(30.0, -30.0, -30.0);
-    Node *node6 = new Node (30.0 , 30.0, 30.0);
-    Node *node7 = new Node (30.0 , -30.0, 30.0);
-    Node *node8 = new Node (30.0 , 30.0, -30.0);
-
-    Spring *spring7 = new Spring(1, 1.0, 1.0, node5, node6);
-    Spring *spring8 = new Spring(1, 1.0, 1.0, node5, node7);
-    Spring *spring9 = new Spring(1, 1.0, 1.0, node5, node8);
-    Spring *spring10 = new Spring(1, 1.0, 1.0, node6, node7);
-    Spring *spring11 = new Spring(1, 1.0, 1.0, node7, node8);
-    Spring *spring12 = new Spring(1, 1.0, 1.0, node6, node8);
-    
-    Spring *spring13 = new Spring(1, 1.0, 1.0, node1, node5);
-    Spring *spring14 = new Spring(1, 1.0, 1.0, node2, node5);
-    Spring *spring15 = new Spring(1, 1.0, 1.0, node3, node5);
-    Spring *spring16 = new Spring(1, 1.0, 1.0, node4, node5);
-    
-    Spring *spring17 = new Spring(1, 1.0, 1.0, node1, node6);
-    Spring *spring18 = new Spring(1, 1.0, 1.0, node2, node6);
-    Spring *spring19 = new Spring(1, 1.0, 1.0, node3, node6);
-    Spring *spring20 = new Spring(1, 1.0, 1.0, node4, node6);
-    
-    Spring *spring21 = new Spring(1, 1.0, 1.0, node1, node7);
-    Spring *spring22 = new Spring(1, 1.0, 1.0, node2, node7);
-    Spring *spring23 = new Spring(1, 1.0, 1.0, node3, node7);
-    Spring *spring24 = new Spring(1, 1.0, 1.0, node4, node7);
-    
-    Spring *spring25 = new Spring(1, 1.0, 1.0, node1, node8);
-    Spring *spring26 = new Spring(1, 1.0, 1.0, node2, node8);
-    Spring *spring27 = new Spring(1, 1.0, 1.0, node3, node8);
-    Spring *spring28 = new Spring(1, 1.0, 1.0, node4, node8);
-    
-    nodes.push_back(node5);
-    nodes.push_back(node6);
-    nodes.push_back(node7);
-    nodes.push_back(node8);
-    
-    springs.push_back(spring7);
-    springs.push_back(spring8);
-    springs.push_back(spring9);
-    springs.push_back(spring10);
-    springs.push_back(spring11);
-    springs.push_back(spring12);
-    
-    springs.push_back(spring13);
-    springs.push_back(spring14);
-    springs.push_back(spring15);
-    springs.push_back(spring16);
-    springs.push_back(spring17);
-    springs.push_back(spring18);
-    springs.push_back(spring19);
-    springs.push_back(spring20);
-    
-    springs.push_back(spring21);
-    springs.push_back(spring22);
-    springs.push_back(spring23);
-    springs.push_back(spring24);
-    springs.push_back(spring25);
-    springs.push_back(spring26);
-    springs.push_back(spring27);
-    springs.push_back(spring28);*/
+    springs.push_back(spring6);*/
 
 }
 
@@ -206,7 +248,7 @@ void display(void){
     glMatrixMode(GL_MODELVIEW);
     glClear(GL_COLOR_BUFFER_BIT);
     glLoadIdentity();
-    gluLookAt(100.0, 0.0, 0, 0, 0, 0, 0.0, 1.0, 0.0);
+    gluLookAt(0.0, 0.0, 250, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
     
     for(int i = 0; i < springs.size(); i++){
@@ -218,7 +260,7 @@ void display(void){
     }
 
     glutSwapBuffers();
-    printSelectedNodeSpringInfo();
+    //printSelectedNodeSpringInfo();
 }
 
 void drawNode(Node *node) {
@@ -235,7 +277,9 @@ void drawNode(Node *node) {
     if(node->getIsSelected()) glColor3f(0.0, 1.0, 0.0);
     else glColor3f(1.0, 0.0, 0.0);
     
-    glutSolidSphere(1.0, 5.0, 5.0);
+    //glVertex3f(x, y, z);
+    
+    glutSolidSphere(.2, 5.0, 5.0);
     
     glEnd();
     glPopMatrix();
@@ -324,14 +368,18 @@ void changeNodeCoord(Node *node, GLfloat value){
     switch(mode){
         case 'x':
             node->setX(node->getX()+value);
+            node->propagateMovementToNeighbors(value, 0.0, 0.0);
             break;
         case 'y':
             node->setY(node->getY()+value);
+            node->propagateMovementToNeighbors(0.0, value, 0.0);
             break;
         case 'z':
             node->setZ(node->getZ()+value);
+            node->propagateMovementToNeighbors(0.0, 0.0, value);
             break;
     }
+    clearAllPropagationFlags();
     
 }
 
