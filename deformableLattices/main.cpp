@@ -136,7 +136,6 @@ bool loadOBJ(const char * path,
     std::vector< glm::vec3 > temp_normals;
     
     //Read from file
-    
     FILE *file;
     file = fopen(path, "r");
     //fopen_s(&file, path, "r");
@@ -173,6 +172,9 @@ bool loadOBJ(const char * path,
             unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
             int matches = fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2]);
             if (matches == 9) {
+                //vertex, texture and normal indices.
+                
+                
                 vertexIndices.push_back(vertexIndex[0]);
                 vertexIndices.push_back(vertexIndex[1]);
                 vertexIndices.push_back(vertexIndex[2]);
